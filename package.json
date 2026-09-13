@@ -1,0 +1,26 @@
+{
+  "name": "business-analytics-360",
+  "version": "1.0.0",
+  "description": "Dashboard Ejecutivo 360 Multi-Fuente (Admin, Recepción, ERP VentaRD)",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "client": "npm run dev --prefix client",
+    "server": "npm run dev --prefix server",
+    "install:all": "npm install && npm install --prefix client && npm install --prefix server"
+  },
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.13.1",
+    "typescript": "^5.7.3"
+  }
+}
