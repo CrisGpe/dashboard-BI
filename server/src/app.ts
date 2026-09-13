@@ -10,7 +10,7 @@ export function createApp() {
   app.use(express.json());
 
   // Health check
-  app.get("/api/health", (_req: Request, res: Response) => {
+  app.get(["/api/health", "/health"], (_req: Request, res: Response) => {
     res.json({
       status: "ok",
       server: "Business Analytics 360",
@@ -19,7 +19,7 @@ export function createApp() {
   });
 
   // Get full 360 dashboard data
-  app.get("/api/dashboard", async (req: Request, res: Response) => {
+  app.get(["/api/dashboard", "/dashboard"], async (req: Request, res: Response) => {
     try {
       const forceRefresh = req.query.refresh === "true";
       const data = await sheetsService.fetchDashboard360Data(forceRefresh);
@@ -34,7 +34,7 @@ export function createApp() {
   });
 
   // Force refresh
-  app.post("/api/refresh", async (_req: Request, res: Response) => {
+  app.post(["/api/refresh", "/refresh"], async (_req: Request, res: Response) => {
     try {
       const data = await sheetsService.fetchDashboard360Data(true);
       res.json({
@@ -53,7 +53,7 @@ export function createApp() {
   });
 
   // Supplies and laboratory analytics endpoint
-  app.get("/api/supplies", async (req: Request, res: Response) => {
+  app.get(["/api/supplies", "/supplies"], async (req: Request, res: Response) => {
     try {
       const forceRefresh = req.query.refresh === "true";
       const data = await sheetsService.fetchSuppliesData(forceRefresh);
@@ -68,7 +68,7 @@ export function createApp() {
   });
 
   // Get sheet settings
-  app.get("/api/settings", (_req: Request, res: Response) => {
+  app.get(["/api/settings", "/settings"], (_req: Request, res: Response) => {
     res.json({
       success: true,
       sheetIds: sheetsService.getSheetConfig()
@@ -76,7 +76,7 @@ export function createApp() {
   });
 
   // Update sheet settings
-  app.post("/api/settings", async (req: Request, res: Response) => {
+  app.post(["/api/settings", "/settings"], async (req: Request, res: Response) => {
     try {
       const {
         adminSheetId,
