@@ -259,7 +259,9 @@ export const BenchmarkBranchCards: React.FC<BenchmarkBranchCardsProps> = ({
                 <p className="text-base font-black text-slate-900 mt-0.5">
                   {activeBranches.GLOSS_SALON.totalFacturado > 0 ? fmtMoney(activeBranches.GLOSS_SALON.totalFacturado) : "En Integración"}
                 </p>
-                <span className="text-[10px] text-slate-500">Ventas 2026 pendiente</span>
+                <span className="text-[10px] text-slate-500">
+                  {activeBranches.GLOSS_SALON.totalFacturado > 0 ? "Ventas 2026 sincronizadas" : "Ventas 2026 pendiente"}
+                </span>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ticket Promedio</span>
@@ -267,7 +269,7 @@ export const BenchmarkBranchCards: React.FC<BenchmarkBranchCardsProps> = ({
                   {activeBranches.GLOSS_SALON.ticketPromedio > 0 ? fmtMoney(activeBranches.GLOSS_SALON.ticketPromedio) : "Pendiente"}
                 </p>
                 <span className="text-[10px] text-slate-500">
-                  {activeBranches.GLOSS_SALON.totalTransacciones.toLocaleString()} atenciones OATC
+                  {activeBranches.GLOSS_SALON.totalTransacciones.toLocaleString()} atenciones
                 </span>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -275,7 +277,9 @@ export const BenchmarkBranchCards: React.FC<BenchmarkBranchCardsProps> = ({
                 <p className="text-lg font-black text-slate-800 mt-0.5">
                   {activeBranches.GLOSS_SALON.estilistasActivos} estilistas
                 </p>
-                <span className="text-[10px] text-slate-500">6,636 check-ins OATC</span>
+                <span className="text-[10px] text-slate-500">
+                  {activeBranches.GLOSS_SALON.totalServicios.toLocaleString()} servicios OATC
+                </span>
               </div>
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Productividad Media</span>

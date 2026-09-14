@@ -380,7 +380,7 @@ export function useFilteredData(data: Dashboard360Response | null) {
     const rdBranchFacturado = benchmark?.RD?.totalFacturado ?? (rdServiciosFacturado + rdRetailFacturado);
     const luxuryBranchFacturado = benchmark?.LUXURY_RD?.totalFacturado ?? (luxuryServiciosFacturado + luxuryRetailFacturado);
     const gonzalesBranchFacturado = benchmark?.GONZALES_AM?.totalFacturado ?? (gonzalesServiciosFacturado + gonzalesRetailFacturado);
-    const glossBranchFacturado = benchmark?.GLOSS_SALON?.totalFacturado ?? 0;
+    const glossBranchFacturado = benchmark?.GLOSS_SALON?.totalFacturado ?? (glossServiciosFacturado + glossRetailFacturado);
     const totalConsolidado = rdBranchFacturado + luxuryBranchFacturado + gonzalesBranchFacturado + glossBranchFacturado;
 
     const salonBreakdown: SalonContribution[] = [
@@ -421,9 +421,9 @@ export function useFilteredData(data: Dashboard360Response | null) {
         salonId: "GLOSS_SALON",
         nombre: SALONES_CONFIG.GLOSS_SALON.nombre,
         totalFacturado: glossBranchFacturado,
-        totalTransacciones: benchmark?.GLOSS_SALON?.totalTransacciones ?? 0,
-        totalServicios: benchmark?.GLOSS_SALON?.totalServicios ?? 0,
-        ticketPromedio: benchmark?.GLOSS_SALON?.ticketPromedio ?? 0,
+        totalTransacciones: benchmark?.GLOSS_SALON?.totalTransacciones ?? glossSales.length,
+        totalServicios: benchmark?.GLOSS_SALON?.totalServicios ?? glossServiciosCount,
+        ticketPromedio: benchmark?.GLOSS_SALON?.ticketPromedio ?? (glossSales.length > 0 ? Math.round((glossBranchFacturado / glossSales.length) * 100) / 100 : 0),
         sharePct: totalConsolidado > 0 ? Math.round((glossBranchFacturado / totalConsolidado) * 1000) / 10 : 0,
         color: SALONES_CONFIG.GLOSS_SALON.color,
         badge: SALONES_CONFIG.GLOSS_SALON.badge

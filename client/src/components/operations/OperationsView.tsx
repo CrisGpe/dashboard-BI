@@ -307,13 +307,13 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
         />
       )}
 
-      {selectedSalon === "GLOSS_SALON" && (
+      {selectedSalon === "GLOSS_SALON" && (!cashServiceSales || cashServiceSales.length === 0) && (
         <DataAvailabilityNotice
           tipo="PENDIENTE_CARGA"
           modulo="Auditoría de Caja"
           salonNombre="Gloss Salon"
           titulo="Órdenes OATC y Asistencia Operativas • Ventas de Caja Pendientes"
-          mensaje="Gloss Salon cuenta con 6,636 órdenes en recepción digital OATC y 2,666 asistencias de estilistas registradas con total normalidad. La pestaña de facturación de caja 2026 está pendiente de sincronización en Google Sheets."
+          mensaje="Gloss Salon cuenta con órdenes en recepción digital OATC y asistencias de estilistas registradas con total normalidad. La pestaña de facturación de caja 2026 está pendiente de sincronización en Google Sheets."
           accionSugerida="A continuación puede auditar todas las órdenes de atención y turnos de asistencia de Gloss Salon."
         />
       )}

@@ -93,7 +93,7 @@ export const ExecutiveView: React.FC<ExecutiveViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Contextual Notices for specific salons */}
-      {selectedSalon === "GLOSS_SALON" && (
+      {selectedSalon === "GLOSS_SALON" && (!data.glossSales || data.glossSales.length === 0) && (
         <DataAvailabilityNotice
           tipo="PENDIENTE_CARGA"
           modulo="Ventas & Caja POS"
