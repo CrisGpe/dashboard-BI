@@ -403,13 +403,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 Pestañas utilizadas: Agentes (16 colaboradores), Clientes (178), Borrador, OATC (6,636 check-ins), Asistencia (2,650) y Ventas 2026 del 01 al 09
               </p>
             </div>
+          </div>
 
-            {/* Insumos y Laboratorio */}
-            <div className="space-y-1.5 p-3 rounded-xl border border-violet-100 bg-violet-50/30">
+          {/* ========================================================================= */}
+          {/* SECCIÓN 5: INSUMOS & LABORATORIO TÉCNICO (SEDE GONZALES RD)               */}
+          {/* ========================================================================= */}
+          <div className="rounded-2xl border border-violet-200/80 bg-violet-50/30 p-4 space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-violet-200/60">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-lg bg-violet-600 text-white shadow-xs">
+                  <FlaskConical className="w-3.5 h-3.5" />
+                </span>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Insumos & Laboratorio Técnico (Sede Gonzales RD)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Módulo de auditoría de tintes, peróxidos y tratamientos perteneciente a Gonzales RD
+                  </p>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-100 text-violet-800 border border-violet-200/60">
+                Sede Gonzales RD
+              </span>
+            </div>
+
+            <div className="space-y-1.5 pl-0.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  <FlaskConical className="w-3.5 h-3.5 text-violet-600" />
-                  Módulo de Insumos & Laboratorio (Desacoplado)
+                <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  8. Despacho de Insumos & Laboratorio (Gonzales RD)
                 </label>
                 {despachosId && (
                   <a

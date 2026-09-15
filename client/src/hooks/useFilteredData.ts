@@ -6,9 +6,17 @@ import {
   SALONES_CONFIG,
   Staff360,
   CashServiceSaleRecord,
-  TicketRecord
+  TicketRecord,
+  TicketDetailRecord,
+  MultiSalonRetailProduct
 } from "../types";
-import { isRetailItem, normalizeSaleToCashRecord, normalizeSaleToTicket } from "../utils/salesNormalizer";
+import {
+  isRetailItem,
+  normalizeSaleToCashRecord,
+  normalizeSaleToTicket,
+  normalizeSaleToTicketDetail,
+  detectBrandFromItem
+} from "../utils/salesNormalizer";
 
 export function useFilteredData(data: Dashboard360Response | null) {
   const [selectedSalon, setSelectedSalon] = useState<SalonFilter>("ALL");
@@ -91,7 +99,11 @@ export function useFilteredData(data: Dashboard360Response | null) {
 
     const normalizedLuxuryTickets = (data.luxurySales || [])
       .filter((ls) => isRetailItem(ls.item, ls.categoria))
-      .map(normalizeSaleToTicket);
+      .map((ls) => normalizeSaleToTicket(ls, "Luxury RD"));
+
+    const normalizedLuxuryDetails = (data.luxurySales || [])
+      .filter((ls) => isRetailItem(ls.item, ls.categoria))
+      .map(normalizeSaleToTicketDetail);
 
     const normalizedGonzalesCash = (data.gonzalesSales || [])
       .filter((gs) => !isRetailItem(gs.item, gs.categoria))
@@ -99,7 +111,11 @@ export function useFilteredData(data: Dashboard360Response | null) {
 
     const normalizedGonzalesTickets = (data.gonzalesSales || [])
       .filter((gs) => isRetailItem(gs.item, gs.categoria))
-      .map(normalizeSaleToTicket);
+      .map((gs) => normalizeSaleToTicket(gs, "Gonzales AM"));
+
+    const normalizedGonzalesDetails = (data.gonzalesSales || [])
+      .filter((gs) => isRetailItem(gs.item, gs.categoria))
+      .map(normalizeSaleToTicketDetail);
 
     const normalizedGlossCash = (data.glossSales || [])
       .filter((gl) => !isRetailItem(gl.item, gl.categoria))
@@ -107,11 +123,20 @@ export function useFilteredData(data: Dashboard360Response | null) {
 
     const normalizedGlossTickets = (data.glossSales || [])
       .filter((gl) => isRetailItem(gl.item, gl.categoria))
-      .map(normalizeSaleToTicket);
+      .map((gl) => normalizeSaleToTicket(gl, "Gloss Salon"));
+
+    const normalizedGlossDetails = (data.glossSales || [])
+      .filter((gl) => isRetailItem(gl.item, gl.categoria))
+      .map(normalizeSaleToTicketDetail);
 
     const baseRdCash = (data.cashServiceSales || []).map((cs) => ({
       ...cs,
       sede: cs.sede || "Salón RD"
+    }));
+
+    const baseRdTickets = (data.tickets || []).map((t) => ({
+      ...t,
+      sede: t.sede || "Salón RD"
     }));
 
     // Universal unified collections across all salons (for Staff360View and comprehensive reporting)
@@ -123,16 +148,23 @@ export function useFilteredData(data: Dashboard360Response | null) {
     ];
 
     const allUnifiedTickets = [
-      ...(data.tickets || []),
+      ...baseRdTickets,
       ...normalizedLuxuryTickets,
       ...normalizedGonzalesTickets,
       ...normalizedGlossTickets
     ];
 
+    const allUnifiedTicketDetails = [
+      ...(data.ticketDetails || []),
+      ...normalizedLuxuryDetails,
+      ...normalizedGonzalesDetails,
+      ...normalizedGlossDetails
+    ];
+
     // Filter Tickets based on selectedSalon
     let targetTicketPool: TicketRecord[] = [];
     if (selectedSalon === "ALL") targetTicketPool = allUnifiedTickets;
-    else if (selectedSalon === "RD") targetTicketPool = data.tickets || [];
+    else if (selectedSalon === "RD") targetTicketPool = baseRdTickets;
     else if (selectedSalon === "LUXURY_RD") targetTicketPool = normalizedLuxuryTickets;
     else if (selectedSalon === "GONZALES_AM") targetTicketPool = normalizedGonzalesTickets;
     else if (selectedSalon === "GLOSS_SALON") targetTicketPool = normalizedGlossTickets;
@@ -430,6 +462,47 @@ export function useFilteredData(data: Dashboard360Response | null) {
       }
     ];
 
+    // Filter Ticket Details matching filtered tickets
+    const filteredTicketSet = new Set(tickets.map((t) => t.ticket));
+    const ticketDetails = allUnifiedTicketDetails.filter((td) => filteredTicketSet.has(td.ticket));
+
+    // Multi-Salon Retail Products Ranking across 4 salons
+    const productMap = new Map<string, {
+      producto: string;
+      marca: string;
+      unidades: number;
+      ingresoTotal: number;
+      sedes: Set<string>;
+    }>();
+
+    ticketDetails.forEach((td) => {
+      const prodName = td.producto || "Producto Varios";
+      const existing = productMap.get(prodName) || {
+        producto: prodName,
+        marca: detectBrandFromItem(prodName),
+        unidades: 0,
+        ingresoTotal: 0,
+        sedes: new Set<string>()
+      };
+      existing.unidades += td.cantidad || 1;
+      existing.ingresoTotal += td.subtotal || 0;
+      const t = tickets.find((tk) => tk.ticket === td.ticket);
+      if (t?.sede) existing.sedes.add(t.sede);
+      else existing.sedes.add("Salón RD");
+      productMap.set(prodName, existing);
+    });
+
+    const multiSalonRetailProducts: MultiSalonRetailProduct[] = Array.from(productMap.values())
+      .map((p) => ({
+        producto: p.producto,
+        marca: p.marca,
+        unidades: p.unidades,
+        ingresoTotal: Math.round(p.ingresoTotal * 100) / 100,
+        precioPromedio: p.unidades > 0 ? Math.round((p.ingresoTotal / p.unidades) * 100) / 100 : 0,
+        sedes: Array.from(p.sedes)
+      }))
+      .sort((a, b) => b.ingresoTotal - a.ingresoTotal);
+
     return {
       orders,
       tickets,
@@ -438,11 +511,13 @@ export function useFilteredData(data: Dashboard360Response | null) {
       cashServiceSales,
       allUnifiedCashSales,
       allUnifiedTickets,
+      allUnifiedTicketDetails,
+      multiSalonRetailProducts,
       luxurySales,
       gonzalesSales,
       glossSales,
       kardex: data.kardex,
-      ticketDetails: data.ticketDetails,
+      ticketDetails,
       staff360,
       productRankings: data.productRankings,
       brandPortfolioMetrics: data.brandPortfolioMetrics,

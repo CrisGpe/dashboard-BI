@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Scissors, ShoppingBag, Users, MessageCircle, GitCompare, FlaskConical } from "lucide-react";
+import { LayoutDashboard, Scissors, ShoppingBag, Layers, Users, MessageCircle, GitCompare, FlaskConical } from "lucide-react";
 import { ActiveTab } from "../../types";
 
 interface TabNavigationProps {
@@ -8,6 +8,7 @@ interface TabNavigationProps {
   counts?: {
     services?: number;
     tickets?: number;
+    kardex?: number;
     staff?: number;
     clients?: number;
     gonzales?: number;
@@ -25,7 +26,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
       id: "benchmark",
       label: "Benchmark Multi-Sede",
       icon: <GitCompare className="w-4 h-4 text-amber-500" />,
-      badge: "RD • Luxury • Gonzales"
+      badge: "4 Sedes"
     },
     {
       id: "operations",
@@ -35,9 +36,15 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
     },
     {
       id: "retail",
-      label: "Ventas Retail & Kardex",
+      label: "Ventas Retail 360°",
       icon: <ShoppingBag className="w-4 h-4" />,
       badge: counts?.tickets ? `${counts.tickets}` : undefined
+    },
+    {
+      id: "kardex",
+      label: "Kardex & Almacén",
+      icon: <Layers className="w-4 h-4 text-indigo-500" />,
+      badge: "Salón RD"
     },
     {
       id: "staff",
@@ -53,9 +60,9 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({ activeTab, onTabCh
     },
     {
       id: "supplies",
-      label: "Insumos & Lab",
+      label: "Insumos & Lab (Gonzales RD)",
       icon: <FlaskConical className="w-4 h-4 text-violet-500" />,
-      badge: "99.2K"
+      badge: "Gonzales RD"
     }
   ];
 

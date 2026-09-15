@@ -87,6 +87,9 @@ export interface TicketRecord {
   tipoDoc: string;
   nroDoc: string;
   expectativas?: string;
+  sede?: string;
+  item?: string;
+  cantidad?: number;
 }
 
 export interface TicketDetailRecord {
@@ -492,7 +495,16 @@ export interface Dashboard360Response {
   glossSales?: GonzalesSaleRecord[];
 }
 
-export type ActiveTab = "executive" | "operations" | "retail" | "staff" | "clients" | "benchmark" | "supplies";
+export type ActiveTab = "executive" | "operations" | "retail" | "kardex" | "staff" | "clients" | "benchmark" | "supplies";
+
+export interface MultiSalonRetailProduct {
+  producto: string;
+  marca: string;
+  unidades: number;
+  ingresoTotal: number;
+  precioPromedio: number;
+  sedes: string[];
+}
 
 export type SalonFilter = "ALL" | "RD" | "LUXURY_RD" | "GONZALES_AM" | "GLOSS_SALON";
 

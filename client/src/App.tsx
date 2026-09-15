@@ -7,7 +7,8 @@ import { FilterBar } from "./components/navbar/FilterBar";
 import { SettingsModal } from "./components/navbar/SettingsModal";
 import { ExecutiveView } from "./components/executive/ExecutiveView";
 import { OperationsView } from "./components/operations/OperationsView";
-import { RetailInventoryView } from "./components/retail/RetailInventoryView";
+import { RetailSalesView } from "./components/retail/RetailSalesView";
+import { KardexInventoryView } from "./components/retail/KardexInventoryView";
 import { Staff360View } from "./components/staff/Staff360View";
 import { ClientsLoyaltyView } from "./components/clients/ClientsLoyaltyView";
 import { MultiBranchBenchmarkView } from "./components/benchmark/MultiBranchBenchmarkView";
@@ -88,7 +89,8 @@ export const App: React.FC = () => {
                 onTabChange={setActiveTab}
                 counts={{
                   services: data.orders.length,
-                  tickets: data.tickets.length,
+                  tickets: filtered.tickets.length,
+                  kardex: data.kardex.length,
                   staff: data.staff360.length,
                   clients: data.clients.length,
                   gonzales: data.gonzalesSales?.length
@@ -146,12 +148,20 @@ export const App: React.FC = () => {
             )}
 
             {activeTab === "retail" && (
-              <RetailInventoryView
+              <RetailSalesView
                 tickets={filtered.tickets}
                 ticketDetails={filtered.ticketDetails}
-                kardex={filtered.kardex}
-                productRankings={filtered.productRankings}
+                multiSalonRetailProducts={filtered.multiSalonRetailProducts}
                 brandMetrics={filtered.brandPortfolioMetrics}
+                searchTerm={searchTerm}
+                selectedSalon={selectedSalon}
+                onSelectSalon={setSelectedSalon}
+              />
+            )}
+
+            {activeTab === "kardex" && (
+              <KardexInventoryView
+                kardex={filtered.kardex}
                 searchTerm={searchTerm}
                 selectedSalon={selectedSalon}
               />

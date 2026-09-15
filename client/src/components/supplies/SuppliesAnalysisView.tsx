@@ -97,6 +97,9 @@ export const SuppliesAnalysisView: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/40 text-indigo-100 border border-indigo-300/40 backdrop-blur-md">
+                Sede: Gonzales RD
+              </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-500/30 text-violet-200 border border-violet-400/30 backdrop-blur-md">
                 <FlaskConical className="w-3.5 h-3.5" />
                 Módulo Desacoplado de Auditoría
@@ -110,10 +113,10 @@ export const SuppliesAnalysisView: React.FC = () => {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Control de Insumos & Laboratorio Técnico
+              Control de Insumos & Laboratorio Técnico (Gonzales RD)
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Módulo especializado para la auditoría de consumos técnicos en peluquería, dispensación de tintes, peróxidos y tratamientos. Opera de forma completamente desacoplada para salvaguardar la exactitud del P&L principal (S/ 3.98M) y garantizar tiempos de carga sub-segundo.
+              Módulo especializado para la auditoría de consumos técnicos en peluquería, dispensación de tintes, peróxidos y tratamientos correspondiente a la sede <strong>Gonzales RD</strong>. Opera de forma completamente desacoplada para salvaguardar la exactitud del P&L principal y garantizar tiempos de carga sub-segundo.
             </p>
           </div>
 
