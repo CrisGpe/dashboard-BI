@@ -21,6 +21,7 @@ import { CashServiceSalesTable } from "./CashServiceSalesTable";
 import { CancellationsAnalysisTab } from "./CancellationsAnalysisTab";
 import { DataAvailabilityNotice } from "../common/DataAvailabilityNotice";
 import { SalonFilter } from "../../types";
+import { classifyStandardCategory } from "../../utils/categoryClassifier";
 
 interface OperationsViewProps {
   orders: OatcRecord[];
@@ -254,14 +255,30 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
   const cashSalesPagination = usePagination(filteredCashSales, 12);
   const cancellationsPagination = usePagination(filteredCancellations, 12);
 
-  // Hourly Demand Curve (From hrRegistro)
-  const hourlyData = useMemo(() => {
+  // Hourly Demand Curve (From hrRegistro) with Modality and Category Breakdown
+  const { hourlyData, demandModalities, demandCategories } = useMemo(() => {
     const hours = [
       "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
       "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00"
     ];
-    const counts: { [key: string]: number } = {};
-    hours.forEach((h) => (counts[h] = 0));
+    const hourMatrix: Record<string, {
+      hour: string;
+      count: number;
+      modalities: Record<string, number>;
+      categories: Record<string, number>;
+    }> = {};
+
+    hours.forEach((h) => {
+      hourMatrix[h] = {
+        hour: h,
+        count: 0,
+        modalities: {},
+        categories: {}
+      };
+    });
+
+    const modalityTotals: Record<string, number> = {};
+    const categoryTotals: Record<string, number> = {};
 
     orders.forEach((o) => {
       if (!o.hrRegistro) return;
@@ -272,26 +289,81 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
       if (period === "PM" && hourNum < 12) hourNum += 12;
       if (period === "AM" && hourNum === 12) hourNum = 0;
       const hourStr = (hourNum < 10 ? `0${hourNum}` : `${hourNum}`) + ":00";
-      if (counts[hourStr] !== undefined) {
-        counts[hourStr]++;
+
+      if (hourMatrix[hourStr]) {
+        hourMatrix[hourStr].count++;
+
+        // Modalidad de ingreso (tipo cliente: ej. Turno, Cita, Cliente, etc.)
+        const rawMod = (o.tipoCliente || "Turno").trim();
+        const mod = rawMod ? rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase() : "Turno";
+        hourMatrix[hourStr].modalities[mod] = (hourMatrix[hourStr].modalities[mod] || 0) + 1;
+        modalityTotals[mod] = (modalityTotals[mod] || 0) + 1;
+
+        // Categoría de atención (tipo oatc normalizado)
+        const cat = classifyStandardCategory(o.tipoOatc);
+        hourMatrix[hourStr].categories[cat] = (hourMatrix[hourStr].categories[cat] || 0) + 1;
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + 1;
       }
     });
 
-    return hours.map((hour) => ({
-      hour,
-      count: counts[hour]
-    }));
+    const MODALITY_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#06b6d4", "#64748b", "#14b8a6"];
+    const sortedModalities = Object.entries(modalityTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count], idx) => ({
+        key: `mod_${name}`,
+        name,
+        count,
+        color: MODALITY_COLORS[idx % MODALITY_COLORS.length]
+      }));
+
+    const CATEGORY_COLOR_MAP: Record<string, string> = {
+      "Colorimetría & Balayage": "#8b5cf6",
+      "Corte & Estilismo": "#06b6d4",
+      "Tratamientos Capilares": "#10b981",
+      "Manicure & Pedicure": "#ec4899",
+      "Lavado & Cuidado Capilar": "#3b82f6",
+      "Estética Facial & Mirada": "#f59e0b",
+      "Otros Servicios / Retail": "#64748b"
+    };
+
+    const sortedCategories = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, count]) => ({
+        key: `cat_${name}`,
+        name,
+        count,
+        color: CATEGORY_COLOR_MAP[name] || "#64748b"
+      }));
+
+    const flattenedHourlyData = hours.map((h) => {
+      const item = hourMatrix[h];
+      const row: any = {
+        hour: h,
+        count: item.count
+      };
+      sortedModalities.forEach((m) => {
+        row[m.key] = item.modalities[m.name] || 0;
+      });
+      sortedCategories.forEach((c) => {
+        row[c.key] = item.categories[c.name] || 0;
+      });
+      return row;
+    });
+
+    return {
+      hourlyData: flattenedHourlyData,
+      demandModalities: sortedModalities,
+      demandCategories: sortedCategories
+    };
   }, [orders]);
 
   // Modality Breakdown
   const modalityDistribution = useMemo(() => {
-    const map: { [key: string]: number } = {};
-    orders.forEach((o) => {
-      const mod = o.tipoCliente || "Turno";
-      map[mod] = (map[mod] || 0) + 1;
-    });
-    return Object.entries(map).map(([name, value]) => ({ name, value }));
-  }, [orders]);
+    return demandModalities.map((m) => ({
+      name: m.name,
+      value: m.count
+    }));
+  }, [demandModalities]);
 
   return (
     <div className="space-y-6">
@@ -321,6 +393,8 @@ export const OperationsView: React.FC<OperationsViewProps> = ({
       {/* 1. Demand & Modality Charts */}
       <DemandAndModalityCharts
         hourlyData={hourlyData}
+        modalities={demandModalities}
+        categories={demandCategories}
         modalityDistribution={modalityDistribution}
         colors={COLORS}
       />
