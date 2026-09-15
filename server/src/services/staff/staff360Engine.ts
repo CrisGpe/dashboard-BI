@@ -180,7 +180,6 @@ export function buildStaff360(
 
     const agg = getOrCreateAgentAgg(agente);
     const isRetail =
-      categoria === "Otros Servicios / Retail" ||
       /\b\d*\s*ml\b/i.test(rawItem) ||
       /\bml\b/i.test(rawItem) ||
       /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);
@@ -216,7 +215,6 @@ export function buildStaff360(
 
       const agg = getOrCreateAgentAgg(agente);
       const isRetail =
-        categoria === "Otros Servicios / Retail" ||
         /\b\d*\s*ml\b/i.test(rawItem) ||
         /\bml\b/i.test(rawItem) ||
         /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);
@@ -253,7 +251,6 @@ export function buildStaff360(
 
       const agg = getOrCreateAgentAgg(agente);
       const isRetail =
-        categoria === "Otros Servicios / Retail" ||
         /\b\d*\s*ml\b/i.test(rawItem) ||
         /\bml\b/i.test(rawItem) ||
         /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);

@@ -4,7 +4,7 @@ export function isRetailItem(item: string, categoria?: string): boolean {
   if (!item) return false;
   const it = item.trim();
 
-  // 1. Primary Rule: Milliliters (ML / ml) in "Producto / Servicio" designates retail bottle presentations
+  // 1. Primary Rule: Presentation by volume (ML / ml) indicates physical retail product
   if (/\b\d*\s*ml\b/i.test(it) || /\bml\b/i.test(it)) {
     return true;
   }
@@ -14,8 +14,9 @@ export function isRetailItem(item: string, categoria?: string): boolean {
     return true;
   }
 
-  // 3. Explicit retail category
-  if (categoria === "Otros Servicios / Retail") {
+  // 3. Explicit product indicator in text (e.g., "PRODUCTO PARA LLEVAR", "RETAIL")
+  const itLower = it.toLowerCase();
+  if (itLower.startsWith("retail") || itLower.includes("para llevar")) {
     return true;
   }
 

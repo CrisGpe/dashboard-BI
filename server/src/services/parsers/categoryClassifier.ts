@@ -64,7 +64,8 @@ export function classifyStandardCategory(rawName: string, subCat?: string): stri
     text.includes("polygel") ||
     text.includes("acripie") ||
     text.includes("pies") ||
-    text.includes("manos")
+    text.includes("manos") ||
+    text.includes("podolog")
   ) {
     return "Manicure & Pedicure";
   }
@@ -73,6 +74,7 @@ export function classifyStandardCategory(rawName: string, subCat?: string): stri
     text.includes("botox") ||
     text.includes("keratina") ||
     text.includes("alisado") ||
+    text.includes("laceado") ||
     text.includes("hidratac") ||
     text.includes("nutric") ||
     text.includes("ampolla") ||
@@ -92,7 +94,9 @@ export function classifyStandardCategory(rawName: string, subCat?: string): stri
     text.includes("maquillaje") ||
     text.includes("facial") ||
     text.includes("lash") ||
-    text.includes("microblading")
+    text.includes("lifting") ||
+    text.includes("microblading") ||
+    text.includes("hilo")
   ) {
     return "Estética Facial & Mirada";
   }
