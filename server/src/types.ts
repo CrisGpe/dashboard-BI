@@ -97,6 +97,9 @@ export interface TicketDetailRecord {
   diaSemana?: string;
   sku: string;
   producto: string;
+  presentacion?: string;
+  marca?: string;
+  linea?: string;
   cantidad: number;
   precioUnitario: number;
   subtotal: number;

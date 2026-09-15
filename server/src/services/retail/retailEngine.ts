@@ -233,10 +233,11 @@ export function processRetailAndInventory(
     const sku = String(row[2] || "").trim();
     const catalogInfo = catalogMap.get(sku);
     const rawProdName = String(row[3] || "Producto").trim();
-    const producto = catalogInfo?.nombre || rawProdName;
+    const baseProdName = catalogInfo?.nombre || rawProdName;
     const marca = catalogInfo?.marca || "Sin Marca";
     const linea = catalogInfo?.linea || "General";
     const presentacion = catalogInfo?.presentacion || "";
+    const fullProductName = presentacion ? `${baseProdName} ${presentacion}` : baseProdName;
     const stockTienda = catalogInfo?.stockTienda || 0;
     const stockPrincipal = catalogInfo?.stockPrincipal || 0;
 
@@ -256,7 +257,10 @@ export function processRetailAndInventory(
       fecha: fechaIso,
       diaSemana,
       sku,
-      producto,
+      producto: fullProductName,
+      presentacion: presentacion || undefined,
+      marca: marca !== "Sin Marca" ? marca : undefined,
+      linea: linea !== "General" ? linea : undefined,
       cantidad,
       precioUnitario,
       subtotal,
@@ -264,12 +268,12 @@ export function processRetailAndInventory(
       margenSoles: costoUnit > 0 ? Math.round(margen * 100) / 100 : undefined
     });
 
-    const pKey = sku || producto;
+    const pKey = sku || fullProductName;
     const current = productStatsMap.get(pKey) || {
       sku,
       marca,
       linea,
-      producto,
+      producto: fullProductName,
       presentacion,
       unidades: 0,
       tickets: new Set<string>(),

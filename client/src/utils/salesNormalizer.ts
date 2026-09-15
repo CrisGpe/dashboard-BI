@@ -103,7 +103,24 @@ export function detectBrandFromItem(item: string): string {
     return "REDKEN";
   }
   if (it.includes("salerm")) return "SALERM";
+  if (it.includes("italian max") || it.includes("post quimica")) return "ITALIAN MAX";
+  if (
+    it.includes("american crew") ||
+    it.includes("forming cream") ||
+    it.includes("grooming cream") ||
+    it.includes("pomode") ||
+    (it.includes("fiber") && it.includes("85 gr"))
+  ) {
+    return "AMERICAN CREW";
+  }
+  if (it.includes("abril nature") || it.includes("abril et nature")) return "ABRIL ET NATURE";
+  if (it.includes("senscience")) return "SENSCIENCE";
   return "OTRAS MARCAS RETAIL";
+}
+
+export function extractPresentationFromItem(item: string): string {
+  const match = (item || "").match(/\b\d+\s*(ml|gr|g|oz|kg|lt|l)\b/i);
+  return match ? match[0].toUpperCase() : "";
 }
 
 export function normalizeSaleToCashRecord(
@@ -173,6 +190,8 @@ export function normalizeSaleToTicketDetail(
   const ticket = sale.docNumero ? `${sale.docTipo || "BOL"}-${sale.docNumero}` : sale.id;
   const cant = sale.cantidad && sale.cantidad > 0 ? sale.cantidad : 1;
   const precioUnitario = Math.round((sale.importe / cant) * 100) / 100;
+  const presentacion = extractPresentationFromItem(sale.item);
+  const marca = detectBrandFromItem(sale.item);
 
   return {
     id: `DET-${sale.id}`,
@@ -181,6 +200,8 @@ export function normalizeSaleToTicketDetail(
     diaSemana: sale.diaSemana,
     sku: `RET-${sale.id}`,
     producto: sale.item,
+    presentacion: presentacion || undefined,
+    marca,
     cantidad: cant,
     precioUnitario,
     subtotal: sale.importe

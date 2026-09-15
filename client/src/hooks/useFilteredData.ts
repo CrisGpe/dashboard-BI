@@ -477,15 +477,19 @@ export function useFilteredData(data: Dashboard360Response | null) {
 
     ticketDetails.forEach((td) => {
       const prodName = td.producto || "Producto Varios";
+      const brand = td.marca || detectBrandFromItem(prodName);
       const existing = productMap.get(prodName) || {
         producto: prodName,
-        marca: detectBrandFromItem(prodName),
+        marca: brand,
         unidades: 0,
         ingresoTotal: 0,
         sedes: new Set<string>()
       };
       existing.unidades += td.cantidad || 1;
       existing.ingresoTotal += td.subtotal || 0;
+      if (brand && brand !== "OTRAS MARCAS RETAIL" && existing.marca === "OTRAS MARCAS RETAIL") {
+        existing.marca = brand;
+      }
       const t = tickets.find((tk) => tk.ticket === td.ticket);
       if (t?.sede) existing.sedes.add(t.sede);
       else existing.sedes.add("Salón RD");

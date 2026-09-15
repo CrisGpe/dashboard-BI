@@ -99,6 +99,9 @@ export interface TicketDetailRecord {
   diaSemana?: string;
   sku: string;
   producto: string;
+  presentacion?: string;
+  marca?: string;
+  linea?: string;
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
@@ -500,6 +503,7 @@ export type ActiveTab = "executive" | "operations" | "retail" | "kardex" | "staf
 export interface MultiSalonRetailProduct {
   producto: string;
   marca: string;
+  presentacion?: string;
   unidades: number;
   ingresoTotal: number;
   precioPromedio: number;
