@@ -179,19 +179,11 @@ export function buildStaff360(
     const categoria = classifyStandardCategory(rawItem);
 
     const agg = getOrCreateAgentAgg(agente);
-    const itemLower = rawItem.toLowerCase();
     const isRetail =
-      categoria === "Otros Servicios / Retail" &&
-      (itemLower.includes("shampoo") ||
-        itemLower.includes("mascarilla") ||
-        itemLower.includes("oleo") ||
-        itemLower.includes("óleo") ||
-        itemLower.includes("serum") ||
-        itemLower.includes("tratamiento en casa") ||
-        itemLower.includes("crema") ||
-        itemLower.includes("termo") ||
-        itemLower.includes("balsam") ||
-        itemLower.includes("ampolla"));
+      categoria === "Otros Servicios / Retail" ||
+      /\b\d*\s*ml\b/i.test(rawItem) ||
+      /\bml\b/i.test(rawItem) ||
+      /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);
 
     if (isRetail) {
       agg.ventasRetailTotal += importe;
@@ -223,19 +215,11 @@ export function buildStaff360(
       const categoria = classifyStandardCategory(rawItem);
 
       const agg = getOrCreateAgentAgg(agente);
-      const itemLower = rawItem.toLowerCase();
       const isRetail =
-        categoria === "Otros Servicios / Retail" &&
-        (itemLower.includes("shampoo") ||
-          itemLower.includes("mascarilla") ||
-          itemLower.includes("oleo") ||
-          itemLower.includes("óleo") ||
-          itemLower.includes("serum") ||
-          itemLower.includes("tratamiento en casa") ||
-          itemLower.includes("crema") ||
-          itemLower.includes("termo") ||
-          itemLower.includes("balsam") ||
-          itemLower.includes("ampolla"));
+        categoria === "Otros Servicios / Retail" ||
+        /\b\d*\s*ml\b/i.test(rawItem) ||
+        /\bml\b/i.test(rawItem) ||
+        /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);
 
       if (isRetail) {
         agg.ventasRetailTotal += importe;
@@ -268,19 +252,11 @@ export function buildStaff360(
       const categoria = classifyStandardCategory(rawItem);
 
       const agg = getOrCreateAgentAgg(agente);
-      const itemLower = rawItem.toLowerCase();
       const isRetail =
-        categoria === "Otros Servicios / Retail" &&
-        (itemLower.includes("shampoo") ||
-          itemLower.includes("mascarilla") ||
-          itemLower.includes("oleo") ||
-          itemLower.includes("óleo") ||
-          itemLower.includes("serum") ||
-          itemLower.includes("tratamiento en casa") ||
-          itemLower.includes("crema") ||
-          itemLower.includes("termo") ||
-          itemLower.includes("balsam") ||
-          itemLower.includes("ampolla"));
+        categoria === "Otros Servicios / Retail" ||
+        /\b\d*\s*ml\b/i.test(rawItem) ||
+        /\bml\b/i.test(rawItem) ||
+        /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawItem);
 
       if (isRetail) {
         agg.ventasRetailTotal += importe;

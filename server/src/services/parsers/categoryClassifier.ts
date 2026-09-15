@@ -18,6 +18,17 @@ export type StandardCategoryName = (typeof STANDARD_CATEGORIES)[number];
 
 export function classifyStandardCategory(rawName: string, subCat?: string): string {
   const text = `${rawName || ""} ${subCat || ""}`.toLowerCase();
+
+  // 1. Retail Products: Identified by volume (ML / ml) or weight/size (GR, G, OZ, LT)
+  // in the "Producto / Servicio" column (e.g. "SHAMPOO ALL SOFT 1000 ML", "MASQUE OLEO RELAX 200 ML")
+  if (
+    /\b\d*\s*ml\b/i.test(rawName) ||
+    /\bml\b/i.test(rawName) ||
+    /\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(rawName)
+  ) {
+    return "Otros Servicios / Retail";
+  }
+
   if (
     text.includes("color") ||
     text.includes("tinte") ||

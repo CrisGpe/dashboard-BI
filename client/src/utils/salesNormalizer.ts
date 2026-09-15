@@ -1,51 +1,107 @@
 import { CashServiceSaleRecord, GonzalesSaleRecord, TicketRecord, TicketDetailRecord } from "../types";
 
-export function isRetailItem(item: string, categoria: string): boolean {
-  if (categoria !== "Otros Servicios / Retail") return false;
-  const itemLower = (item || "").toLowerCase();
-  return (
-    itemLower.includes("shampoo") ||
-    itemLower.includes("mascarilla") ||
-    itemLower.includes("masque") ||
-    itemLower.includes("oleo") ||
-    itemLower.includes("óleo") ||
-    itemLower.includes("serum") ||
-    itemLower.includes("tratamiento en casa") ||
-    itemLower.includes("crema") ||
-    itemLower.includes("termo") ||
-    itemLower.includes("balsam") ||
-    itemLower.includes("ampolla") ||
-    itemLower.includes("pack") ||
-    itemLower.includes("caja") ||
-    itemLower.includes("acondicionador") ||
-    itemLower.includes("conditioner") ||
-    itemLower.includes("spray") ||
-    itemLower.includes("gel") ||
-    itemLower.includes("mousse") ||
-    itemLower.includes("cera") ||
-    itemLower.includes("gotas") ||
-    itemLower.includes("locion") ||
-    itemLower.includes("loción") ||
-    itemLower.includes("bain") ||
-    itemLower.includes("fluido") ||
-    itemLower.includes("aceite")
-  );
+export function isRetailItem(item: string, categoria?: string): boolean {
+  if (!item) return false;
+  const it = item.trim();
+
+  // 1. Primary Rule: Milliliters (ML / ml) in "Producto / Servicio" designates retail bottle presentations
+  if (/\b\d*\s*ml\b/i.test(it) || /\bml\b/i.test(it)) {
+    return true;
+  }
+
+  // 2. Weight and size presentations (GR, G, OZ, LT)
+  if (/\b\d+\s*(gr|g|oz|kg|lt|l)\b/i.test(it)) {
+    return true;
+  }
+
+  // 3. Explicit retail category
+  if (categoria === "Otros Servicios / Retail") {
+    return true;
+  }
+
+  return false;
 }
 
 export function detectBrandFromItem(item: string): string {
   const it = (item || "").toLowerCase();
-  if (it.includes("therapiste") || it.includes("oleo relax") || it.includes("bain") || it.includes("soleil") || it.includes("kerastase") || it.includes("kérastase") || it.includes("genesis") || it.includes("chronologiste") || it.includes("nutritive") || it.includes("densifique")) return "KÉRASTASE";
+  if (
+    it.includes("therapiste") ||
+    it.includes("oleo relax") ||
+    it.includes("bain") ||
+    it.includes("soleil") ||
+    it.includes("kerastase") ||
+    it.includes("kérastase") ||
+    it.includes("genesis") ||
+    it.includes("chronologiste") ||
+    it.includes("nutritive") ||
+    it.includes("densifique") ||
+    it.includes("fondant") ||
+    it.includes("ciment") ||
+    it.includes("nectar") ||
+    it.includes("elixir") ||
+    it.includes("8h magic") ||
+    it.includes("anti chute") ||
+    it.includes("divalent") ||
+    it.includes("fluidealiste") ||
+    it.includes("hydra fortifiant") ||
+    it.includes("premiere") ||
+    it.includes("maskeratine") ||
+    it.includes("discipline")
+  ) {
+    return "KÉRASTASE";
+  }
+  if (it.includes("equave") || it.includes("proyou") || it.includes("revlon")) return "REVLON PROFESSIONAL";
+  if (it.includes("small talk") || it.includes("bed head") || it.includes("tigi")) return "TIGI BED HEAD";
+  if (it.includes("energizing") || it.includes("davines")) return "DAVINES";
   if (it.includes("baor")) return "BAOR PROFESSIONAL";
-  if (it.includes("fusion") || it.includes("wella") || it.includes("invigo") || it.includes("oil reflections") || it.includes("elements")) return "WELLA PROFESSIONALS";
+  if (
+    it.includes("fusion") ||
+    it.includes("wella") ||
+    it.includes("invigo") ||
+    it.includes("oil reflections") ||
+    it.includes("elements") ||
+    it.includes("luxe oil") ||
+    it.includes("luxeoil") ||
+    it.includes("sebastian")
+  ) {
+    return "WELLA PROFESSIONALS";
+  }
   if (it.includes("nioxin") || it.includes("diaboost")) return "NIOXIN";
-  if (it.includes("loreal") || it.includes("l'oréal") || it.includes("abs rep") || it.includes("metal detox") || it.includes("vitamino")) return "L'ORÉAL PROFESSIONNEL";
+  if (
+    it.includes("loreal") ||
+    it.includes("l'oréal") ||
+    it.includes("abs rep") ||
+    it.includes("metal detox") ||
+    it.includes("vitamino") ||
+    it.includes("absolut repair") ||
+    it.includes("liss unlimited") ||
+    it.includes("silver")
+  ) {
+    return "L'ORÉAL PROFESSIONNEL";
+  }
   if (it.includes("moroccanoil")) return "MOROCCANOIL";
-  if (it.includes("opi")) return "OPI";
+  if (
+    it.includes("opi") ||
+    it.includes("alpine snow") ||
+    it.includes("big apple red") ||
+    it.includes("lacquer") ||
+    it.includes("gelcolor") ||
+    it.includes("bubble bath")
+  ) {
+    return "OPI";
+  }
   if (it.includes("schwarzkopf") || it.includes("bonacure") || it.includes("osir")) return "SCHWARZKOPF";
-  if (it.includes("alfaparf") || it.includes("semi di lino")) return "ALFAPARF";
-  if (it.includes("redken")) return "REDKEN";
+  if (it.includes("alfaparf") || it.includes("semi di lino") || it.includes("il salone")) return "ALFAPARF";
+  if (
+    it.includes("redken") ||
+    it.includes("all soft") ||
+    it.includes("frizz dismiss") ||
+    it.includes("extreme") ||
+    it.includes("acidic")
+  ) {
+    return "REDKEN";
+  }
   if (it.includes("salerm")) return "SALERM";
-  if (it.includes("sebastian")) return "SEBASTIAN";
   return "OTRAS MARCAS RETAIL";
 }
 
