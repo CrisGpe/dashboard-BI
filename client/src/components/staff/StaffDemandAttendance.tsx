@@ -22,11 +22,12 @@ interface HourlyAnalysisData {
 
 interface StaffDemandAttendanceProps {
   periodLabel: string;
-  chartMode: "stacked" | "cumulative";
-  onChartModeChange: (mode: "stacked" | "cumulative") => void;
+  chartMode: "modality" | "stacked" | "cumulative";
+  onChartModeChange: (mode: "modality" | "stacked" | "cumulative") => void;
   hourlyAnalysis: {
     data: HourlyAnalysisData[];
     topCats: string[];
+    modalities?: { key: string; name: string; color: string }[];
     peakHour: string;
     valleyHour: string;
   };
@@ -63,20 +64,28 @@ export const StaffDemandAttendance: React.FC<StaffDemandAttendanceProps> = ({
         </div>
         <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-semibold no-print self-start sm:self-auto">
           <button
-            onClick={() => onChartModeChange("stacked")}
+            onClick={() => onChartModeChange("modality")}
             className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-              chartMode === "stacked" ? "bg-white text-indigo-600 shadow-xs" : "text-slate-600"
+              chartMode === "modality" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Por Categoría (Apilado)
+            Por Modalidad
+          </button>
+          <button
+            onClick={() => onChartModeChange("stacked")}
+            className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+              chartMode === "stacked" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Por Especialidad
           </button>
           <button
             onClick={() => onChartModeChange("cumulative")}
             className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-              chartMode === "cumulative" ? "bg-white text-indigo-600 shadow-xs" : "text-slate-600"
+              chartMode === "cumulative" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
             }`}
           >
-            Curva Acumulada
+            Flujo Acumulado
           </button>
         </div>
       </div>
@@ -87,7 +96,9 @@ export const StaffDemandAttendance: React.FC<StaffDemandAttendanceProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
             <div>
               <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                {chartMode === "stacked"
+                {chartMode === "modality"
+                  ? "Demanda Horaria por Modalidad de Ingreso"
+                  : chartMode === "stacked"
                   ? "Demanda Horaria por Especialidad de Atención"
                   : "Flujo de Carga Horaria Acumulada a lo Largo de la Jornada"}
               </h3>
@@ -107,7 +118,25 @@ export const StaffDemandAttendance: React.FC<StaffDemandAttendanceProps> = ({
 
           <div className="h-64 sm:h-72">
             <ResponsiveContainer width="100%" height="100%">
-              {chartMode === "stacked" ? (
+              {chartMode === "modality" ? (
+                <BarChart data={hourlyAnalysis.data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="hora" tick={{ fontSize: 10, fill: "#64748b" }} />
+                  <YAxis tick={{ fontSize: 10, fill: "#64748b" }} />
+                  <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: "11px" }} />
+                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
+                  {(hourlyAnalysis.modalities || []).map((m, idx, arr) => (
+                    <Bar
+                      key={m.key}
+                      dataKey={m.key}
+                      name={m.name}
+                      stackId="modStack"
+                      fill={m.color}
+                      radius={idx === arr.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]}
+                    />
+                  ))}
+                </BarChart>
+              ) : chartMode === "stacked" ? (
                 <BarChart data={hourlyAnalysis.data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="hora" tick={{ fontSize: 10, fill: "#64748b" }} />
@@ -175,7 +204,7 @@ export const StaffDemandAttendance: React.FC<StaffDemandAttendanceProps> = ({
                   {horasTrabajadas} horas • {diasAsistidos} días asistidos
                 </span>
                 <span className="text-[11px] text-slate-500 block mt-0.5">
-                  Ingresos generados por hora: <strong>S/. {facturacionPorHora.toFixed(0)}/h</strong>
+                  Ingresos por servicios por hora: <strong>S/. {facturacionPorHora.toFixed(0)}/h</strong>
                 </span>
               </div>
 

@@ -103,7 +103,7 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
   }, [filteredStaffList, staffList, selectedAgent]);
 
   // View toggles
-  const [chartMode, setChartMode] = useState<"stacked" | "cumulative">("stacked");
+  const [chartMode, setChartMode] = useState<"modality" | "stacked" | "cumulative">("modality");
   const [agreementNotes, setAgreementNotes] = useState<string>("");
   const [savedNotesStatus, setSavedNotesStatus] = useState<boolean>(false);
   const [showRejectionAudit, setShowRejectionAudit] = useState<boolean>(false);
@@ -251,12 +251,14 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
     const facturacionTotalPeriodo = facturadoServicios + facturadoRetail;
     const comisionesTotalesPeriodo = comisionesServicios + comisionesRetail;
 
-    const margenAportadoEmpresa = (facturadoServicios - comisionesServicios) + (facturadoRetail * 0.35);
-    const margenPct = facturacionTotalPeriodo > 0 ? Math.round((margenAportadoEmpresa / facturacionTotalPeriodo) * 100) : 0;
+    // Margen Neto Aportado: Considera solo lo generado por la facturación de servicios (excluye retail)
+    const margenAportadoEmpresa = facturadoServicios - comisionesServicios;
+    const margenPct = facturadoServicios > 0 ? Math.round((margenAportadoEmpresa / facturadoServicios) * 100) : 0;
 
     const diasAsistidos = new Set(agentAttendance.map((a) => a.fecha)).size;
     const horasTrabajadas = agentAttendance.reduce((acc, a) => acc + (a.horasTrabajadas || 0), 0);
-    const facturacionPorHora = horasTrabajadas > 0 ? facturacionTotalPeriodo / horasTrabajadas : 0;
+    // Eficiencia Económica: Considera únicamente la facturación por servicios
+    const facturacionPorHora = horasTrabajadas > 0 ? facturadoServicios / horasTrabajadas : 0;
 
     const serviceDates = new Set(agentCashSales.map((cs) => cs.fecha));
     const crossSellTickets = agentTickets.filter((t) => serviceDates.has(t.fecha)).length;
@@ -394,18 +396,23 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
       .sort((a, b) => b.facturacion - a.facturacion);
   }, [agentCashSales, cashServiceSales, activeAgent, localStartDate, localEndDate]);
 
-  // Hourly Distribution
+  // Hourly Distribution with Category and Modality Breakdown
   const hourlyAnalysis = useMemo(() => {
     const hours = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00"];
-    const hourMap = new Map<string, { hora: string; total: number; [cat: string]: any }>();
+    const hourMap = new Map<string, { hora: string; total: number; [key: string]: any }>();
 
     hours.forEach((h) => {
       hourMap.set(h, { hora: h, total: 0 });
     });
 
     const topCats = activeAgent?.serviciosTop.slice(0, 3).map((s) => s.servicio) || [];
+    const modalityTotals: Record<string, number> = {};
 
     agentOrders.forEach((o) => {
+      const rawMod = (o.tipoCliente || "Turno").trim();
+      const mod = rawMod ? rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase() : "Turno";
+      modalityTotals[mod] = (modalityTotals[mod] || 0) + 1;
+
       if (!o.hrRegistro) return;
       const m = o.hrRegistro.match(/(\d{1,2}):\d{2}\s*(AM|PM)?/i);
       if (!m) return;
@@ -424,8 +431,19 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
         } else {
           cur["Otros"] = (cur["Otros"] || 0) + 1;
         }
+
+        cur[`mod_${mod}`] = (cur[`mod_${mod}`] || 0) + 1;
       }
     });
+
+    const MODALITY_COLORS = ["#6366f1", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#06b6d4", "#64748b"];
+    const modalities = Object.entries(modalityTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name], idx) => ({
+        key: `mod_${name}`,
+        name,
+        color: MODALITY_COLORS[idx % MODALITY_COLORS.length]
+      }));
 
     let runningTotal = 0;
     const result = hours.map((h) => {
@@ -456,6 +474,7 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
     return {
       data: result,
       topCats,
+      modalities,
       peakHour,
       maxVal,
       valleyHour,

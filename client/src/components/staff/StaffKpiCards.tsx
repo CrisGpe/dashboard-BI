@@ -72,7 +72,7 @@ export const StaffKpiCards: React.FC<StaffKpiCardsProps> = ({
           {formatCurrency(margenAportadoEmpresa)}
         </div>
         <p className="text-[11px] text-slate-500 mt-0.5">
-          Ganancia neta tras comisiones y costo retail ({margenPct}%)
+          Margen de servicios tras comisiones ({margenPct}%)
         </p>
       </div>
 
@@ -87,7 +87,7 @@ export const StaffKpiCards: React.FC<StaffKpiCardsProps> = ({
           S/. {facturacionPorHora.toFixed(0)}/h
         </div>
         <p className="text-[11px] text-slate-500 mt-0.5">
-          {horasTrabajadas} hrs en salón • {diasAsistidos} días
+          {horasTrabajadas} hrs en salón • {diasAsistidos} días (Servicios)
         </p>
       </div>
     </div>
