@@ -11,6 +11,8 @@ export interface CategoryBenchmarkItem {
   diffPct: number;
   margenPct: number;
   isRetail?: boolean;
+  sedeAtenciones?: number;
+  sedeFacturacion?: number;
 }
 
 interface StaffPnlBenchmarkProps {
@@ -58,6 +60,34 @@ export const StaffPnlBenchmark: React.FC<StaffPnlBenchmarkProps> = ({
       .filter((c) => c.isRetail)
       .reduce((acc, c) => acc + c.atenciones, 0);
   }, [categoryBenchmark]);
+
+  // Totales ponderados para la fila de totales
+  const totals = useMemo(() => {
+    const totalAtenciones = filteredBenchmark.reduce((acc, c) => acc + c.atenciones, 0);
+    const totalFacturacion = filteredBenchmark.reduce((acc, c) => acc + c.facturacion, 0);
+    const ticketColab = totalAtenciones > 0 ? totalFacturacion / totalAtenciones : 0;
+
+    const totalSedeAtenciones = filteredBenchmark.reduce(
+      (acc, c) => acc + (c.sedeAtenciones || c.atenciones),
+      0
+    );
+    const totalSedeFacturacion = filteredBenchmark.reduce(
+      (acc, c) => acc + (c.sedeFacturacion || c.atenciones * c.ticketSede),
+      0
+    );
+    const ticketSede = totalSedeAtenciones > 0 ? totalSedeFacturacion / totalSedeAtenciones : 0;
+
+    const diffPct =
+      ticketSede > 0 ? Math.round(((ticketColab - ticketSede) / ticketSede) * 100) : 0;
+
+    return {
+      totalAtenciones,
+      totalFacturacion,
+      ticketColab,
+      ticketSede,
+      diffPct
+    };
+  }, [filteredBenchmark]);
 
   return (
     <div className="space-y-4">
@@ -221,6 +251,47 @@ export const StaffPnlBenchmark: React.FC<StaffPnlBenchmarkProps> = ({
                     ))
                   )}
                 </tbody>
+                {filteredBenchmark.length > 0 && (
+                  <tfoot className="bg-slate-50/90 font-bold border-t-2 border-slate-200 text-slate-800">
+                    <tr>
+                      <td className="px-3 py-2.5 rounded-l-lg font-black uppercase text-slate-900 tracking-wider">
+                        {viewMode === "retail"
+                          ? "Total Retail"
+                          : viewMode === "services"
+                          ? "Total Servicios"
+                          : "Total General"}
+                      </td>
+                      <td className="px-3 py-2.5 text-center text-slate-900 font-black font-mono">
+                        {formatNumber(totals.totalAtenciones)}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-black text-slate-900 font-mono">
+                        {formatCurrency(totals.totalFacturacion)}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-black text-indigo-700 font-mono">
+                        {formatCurrency(totals.ticketColab)}
+                      </td>
+                      <td className="px-3 py-2.5 text-right text-slate-600 font-bold font-mono">
+                        {formatCurrency(totals.ticketSede)}
+                      </td>
+                      <td className="px-3 py-2.5 text-center rounded-r-lg whitespace-nowrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold inline-flex items-center gap-0.5 ${
+                            totals.diffPct >= 0
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
+                              : "bg-rose-100 text-rose-800 border border-rose-300"
+                          }`}
+                        >
+                          {totals.diffPct >= 0 ? (
+                            <ArrowUpRight className="w-3 h-3" />
+                          ) : (
+                            <ArrowDownRight className="w-3 h-3" />
+                          )}
+                          {totals.diffPct >= 0 ? `+${totals.diffPct}%` : `${totals.diffPct}%`}
+                        </span>
+                      </td>
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
           </div>

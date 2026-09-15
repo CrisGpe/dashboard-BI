@@ -283,21 +283,42 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
     };
   }, [agentCashSales, agentTickets, agentAttendance]);
 
-  // Modality Breakdown
+  // Modality Breakdown with Zoom to Tipo OATC (Col C OATC / Col P Borrador)
   const modalityStats = useMemo(() => {
-    const map = new Map<string, number>();
+    const modalityMap = new Map<
+      string,
+      { count: number; serviceMap: Map<string, number> }
+    >();
+
     agentOrders.forEach((o) => {
-      const mod = o.tipoCliente || "Turno";
-      map.set(mod, (map.get(mod) || 0) + 1);
+      const rawMod = (o.tipoCliente || "Turno").trim();
+      const mod = rawMod ? rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase() : "Turno";
+      const srv = (o.tipoOatc || "Otros Servicios").trim();
+
+      const cur = modalityMap.get(mod) || { count: 0, serviceMap: new Map() };
+      cur.count++;
+      cur.serviceMap.set(srv, (cur.serviceMap.get(srv) || 0) + 1);
+      modalityMap.set(mod, cur);
     });
 
     const total = agentOrders.length || 1;
-    return Array.from(map.entries())
-      .map(([name, count]) => ({
-        name,
-        count,
-        pct: Math.round((count / total) * 100)
-      }))
+    return Array.from(modalityMap.entries())
+      .map(([name, data]) => {
+        const serviceBreakdown = Array.from(data.serviceMap.entries())
+          .map(([tipoOatc, count]) => ({
+            tipoOatc,
+            count,
+            pct: Math.round((count / (data.count || 1)) * 100)
+          }))
+          .sort((a, b) => b.count - a.count);
+
+        return {
+          name,
+          count: data.count,
+          pct: Math.round((data.count / total) * 100),
+          serviceBreakdown
+        };
+      })
       .sort((a, b) => b.count - a.count);
   }, [agentOrders]);
 
@@ -365,7 +386,9 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
           ticketSede: Math.round(avgSede * 100) / 100,
           diffPct,
           margenPct,
-          isRetail: stats.isRetail
+          isRetail: stats.isRetail,
+          sedeAtenciones: sedeStats.count,
+          sedeFacturacion: Math.round(sedeStats.total * 100) / 100
         };
       })
       .sort((a, b) => b.facturacion - a.facturacion);
