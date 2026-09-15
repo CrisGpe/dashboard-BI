@@ -32,6 +32,8 @@ export const MultiBranchBenchmarkView: React.FC<MultiBranchBenchmarkViewProps> =
     activeBranches,
     weeklyChartData,
     hourlyChartData,
+    weeklyMetricMode,
+    setWeeklyMetricMode,
     stylistStats,
     formatChartValue,
     fmtMoney,
@@ -78,6 +80,8 @@ export const MultiBranchBenchmarkView: React.FC<MultiBranchBenchmarkViewProps> =
         weeklyChartData={weeklyChartData}
         hourlyChartData={hourlyChartData}
         normalizationMode={normalizationMode}
+        weeklyMetricMode={weeklyMetricMode}
+        onWeeklyMetricModeChange={setWeeklyMetricMode}
         formatChartValue={formatChartValue}
       />
 

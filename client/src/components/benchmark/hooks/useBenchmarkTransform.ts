@@ -19,9 +19,11 @@ export interface UseBenchmarkTransformReturn {
   activeBranches: MultiBranchBenchmark["branches"];
   weeklyChartData: any[];
   hourlyChartData: any[];
+  weeklyMetricMode: "atenciones" | "comprobantes";
+  setWeeklyMetricMode: (mode: "atenciones" | "comprobantes") => void;
   filteredGonzalesSales: GonzalesSaleRecord[];
   stylistStats: any[];
-  formatChartValue: (val: number) => string;
+  formatChartValue: (val: number, isHourly?: boolean) => string;
   fmtMoney: (n: number) => string;
   fmtCompact: (n: number) => string;
 }
@@ -31,6 +33,7 @@ export function useBenchmarkTransform(
   gonzalesSales: GonzalesSaleRecord[] = []
 ): UseBenchmarkTransformReturn {
   const [normalizationMode, setNormalizationMode] = useState<DemandNormalizationMode>("relative_pct");
+  const [weeklyMetricMode, setWeeklyMetricMode] = useState<"atenciones" | "comprobantes">("atenciones");
   const [timeWindow, setTimeWindow] = useState<BenchmarkTimeWindow>("year_2026");
   const [razonFilter, setRazonFilter] = useState<string>("ALL");
   const [stylistSearch, setStylistSearch] = useState<string>("");
@@ -55,9 +58,29 @@ export function useBenchmarkTransform(
       : benchmark.comparativaHorariaNormalizada;
   }, [benchmark, is2026]);
 
+  const activeWeeklyComprobantes = useMemo(() => {
+    if (!benchmark) return [];
+    return is2026 && benchmark.benchmark2026?.comparativaSemanalComprobantes
+      ? benchmark.benchmark2026.comparativaSemanalComprobantes
+      : benchmark.comparativaSemanalComprobantes || [];
+  }, [benchmark, is2026]);
+
   // Transform weekly data for Recharts according to Normalization Mode
   const weeklyChartData = useMemo(() => {
     if (!benchmark) return [];
+
+    // If user toggled to view Comprobantes / Día
+    if (weeklyMetricMode === "comprobantes" && activeWeeklyComprobantes.length > 0) {
+      return activeWeeklyComprobantes.map((pt) => ({
+        label: pt.label,
+        key: pt.key,
+        rd: pt.rd.dailyAvg,
+        luxury: pt.luxury.dailyAvg,
+        gonzales: pt.gonzales.dailyAvg,
+        gloss: pt.gloss.dailyAvg
+      }));
+    }
+
     if (!activeWeeklyNormalizado || activeWeeklyNormalizado.length === 0) {
       return benchmark.comparativaSemanal.map((d) => ({
         label: d.label,
@@ -100,7 +123,7 @@ export function useBenchmarkTransform(
         gloss: glossVal
       };
     });
-  }, [activeWeeklyNormalizado, normalizationMode, benchmark]);
+  }, [activeWeeklyNormalizado, activeWeeklyComprobantes, normalizationMode, weeklyMetricMode, benchmark]);
 
   // Transform hourly data for Recharts according to Normalization Mode
   const hourlyChartData = useMemo(() => {
@@ -150,7 +173,10 @@ export function useBenchmarkTransform(
   }, [activeHourlyNormalizado, normalizationMode, benchmark]);
 
   // Format Helper for Charts Tooltip and Axis
-  const formatChartValue = (val: number) => {
+  const formatChartValue = (val: number, isHourly?: boolean) => {
+    if (!isHourly && weeklyMetricMode === "comprobantes") {
+      return `${val.toFixed(1)} comp/día`;
+    }
     if (normalizationMode === "relative_pct") return `${val.toFixed(1)}%`;
     if (normalizationMode === "daily_avg") return `${val.toFixed(1)} serv/día`;
     if (normalizationMode === "per_stylist") return `${val.toFixed(1)} serv/estilista`;
@@ -233,6 +259,8 @@ export function useBenchmarkTransform(
   return {
     normalizationMode,
     setNormalizationMode,
+    weeklyMetricMode,
+    setWeeklyMetricMode,
     timeWindow,
     setTimeWindow,
     razonFilter,

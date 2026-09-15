@@ -372,6 +372,11 @@ export interface BranchKpiSummary {
   distribucionHoraria: { hora: number; label: string; atenciones: number; ingresoEstimado: number }[];
   horaPico: number;
   franjaPico: string;
+  facturacionMensualPromedio: number;
+  estilistasMensualesPromedio: number;
+  ticketPromedioEstilismo: number;
+  ticketPromedioCosmiatria: number;
+  comprobantesSemanales?: { dia: string; label: string; comprobantesTotal: number; promedioDiario: number; sharePct: number }[];
 }
 
 export interface BranchCancellationSummary {
@@ -415,6 +420,14 @@ export interface MultiBranchBenchmark {
   }[];
   comparativaSemanalNormalizada: NormalizedDemandPoint[];
   comparativaHorariaNormalizada: NormalizedDemandPoint[];
+  comparativaSemanalComprobantes?: {
+    key: string;
+    label: string;
+    rd: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+    luxury: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+    gonzales: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+    gloss: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+  }[];
   comparativaCancelaciones?: BranchCancellationSummary[];
   benchmark2026?: {
     branches: {
@@ -425,6 +438,14 @@ export interface MultiBranchBenchmark {
     };
     comparativaSemanalNormalizada: NormalizedDemandPoint[];
     comparativaHorariaNormalizada: NormalizedDemandPoint[];
+    comparativaSemanalComprobantes?: {
+      key: string;
+      label: string;
+      rd: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+      luxury: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+      gonzales: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+      gloss: { comprobantesTotal: number; dailyAvg: number; relativePct: number };
+    }[];
     comparativaMix: {
       categoria: string;
       rdPct: number;

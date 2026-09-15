@@ -18,13 +18,17 @@ export interface BenchmarkDemandCurvesProps {
   weeklyChartData: any[];
   hourlyChartData: any[];
   normalizationMode: DemandNormalizationMode;
-  formatChartValue: (val: number) => string;
+  weeklyMetricMode?: "atenciones" | "comprobantes";
+  onWeeklyMetricModeChange?: (mode: "atenciones" | "comprobantes") => void;
+  formatChartValue: (val: number, isHourly?: boolean) => string;
 }
 
 export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
   weeklyChartData,
   hourlyChartData,
   normalizationMode,
+  weeklyMetricMode = "atenciones",
+  onWeeklyMetricModeChange,
   formatChartValue
 }) => {
   return (
@@ -32,26 +36,57 @@ export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
       {/* Weekly Curve (Lunes a Domingo) */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4 text-indigo-600" />
               <h3 className="text-sm font-black text-slate-900">
                 Curva Semanal Normalizada (Lunes a Domingo)
               </h3>
             </div>
-            <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
-              {normalizationMode === "relative_pct"
-                ? "% Relativo"
-                : normalizationMode === "daily_avg"
-                ? "Atenciones / Día"
-                : normalizationMode === "per_stylist"
-                ? "Atenciones / Estilista"
-                : "Total Absoluto"}
-            </span>
+            <div className="flex items-center gap-1.5">
+              {/* Toggle Atenciones vs Comprobantes */}
+              <div className="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => onWeeklyMetricModeChange?.("atenciones")}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                    weeklyMetricMode === "atenciones"
+                      ? "bg-white text-indigo-700 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Atenciones / Día
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onWeeklyMetricModeChange?.("comprobantes")}
+                  className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all cursor-pointer ${
+                    weeklyMetricMode === "comprobantes"
+                      ? "bg-white text-emerald-700 shadow-xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  Comprobantes / Día
+                </button>
+              </div>
+
+              {weeklyMetricMode === "atenciones" && (
+                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md hidden sm:inline-block">
+                  {normalizationMode === "relative_pct"
+                    ? "% Relativo"
+                    : normalizationMode === "daily_avg"
+                    ? "Servicios/Día"
+                    : normalizationMode === "per_stylist"
+                    ? "Por Estilista"
+                    : "Total"}
+                </span>
+              )}
+            </div>
           </div>
           <p className="text-xs text-slate-500 mb-4">
-            Comparativa de la forma de la semana comercial. Sábado concentra entre el 25% y 28% de la demanda en las
-            cuatro sedes, con Gonzales AM mostrando mayor polarización de fin de semana.
+            {weeklyMetricMode === "comprobantes"
+              ? "Comparativa de comprobantes de venta (tickets, boletas y facturas de caja) emitidos en promedio por día de semana en los 4 salones."
+              : "Comparativa de la forma de la semana comercial según flujo de servicios. Sábado concentra entre el 25% y 28% de la demanda en las cuatro sedes."}
           </p>
         </div>
 
@@ -65,7 +100,9 @@ export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
                 fontSize={11}
                 tickLine={false}
                 tickFormatter={(val) =>
-                  normalizationMode === "relative_pct"
+                  weeklyMetricMode === "comprobantes"
+                    ? `${val}`
+                    : normalizationMode === "relative_pct"
                     ? `${val}%`
                     : val >= 1000
                     ? `${(val / 1000).toFixed(0)}k`
@@ -80,7 +117,7 @@ export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
                   color: "#fff",
                   fontSize: "12px"
                 }}
-                formatter={(value: any, name: any) => [formatChartValue(Number(value || 0)), name]}
+                formatter={(value: any, name: any) => [formatChartValue(Number(value || 0), false), name]}
               />
               <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} iconType="circle" />
               <Bar dataKey="rd" name="Salón RD (Real)" fill="#4f46e5" radius={[4, 4, 0, 0]} />
@@ -92,9 +129,19 @@ export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
         </div>
 
         <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between text-xs text-slate-600">
-          <span className="font-semibold text-slate-700">Pico semanal compartido:</span>
-          <span className="font-black text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
-            Sábado (~26.5% promedio quad-sede)
+          <span className="font-semibold text-slate-700">
+            {weeklyMetricMode === "comprobantes" ? "Pico semanal en caja:" : "Pico semanal compartido:"}
+          </span>
+          <span
+            className={`font-black px-2 py-0.5 rounded ${
+              weeklyMetricMode === "comprobantes"
+                ? "text-emerald-700 bg-emerald-50"
+                : "text-indigo-700 bg-indigo-50"
+            }`}
+          >
+            {weeklyMetricMode === "comprobantes"
+              ? "Sábado (Mayor emisión de comprobantes de pago)"
+              : "Sábado (~26.5% promedio quad-sede)"}
           </span>
         </div>
       </div>
@@ -144,7 +191,7 @@ export const BenchmarkDemandCurves: React.FC<BenchmarkDemandCurvesProps> = ({
                   color: "#fff",
                   fontSize: "12px"
                 }}
-                formatter={(val: any, name: any) => [formatChartValue(Number(val || 0)), name]}
+                formatter={(val: any, name: any) => [formatChartValue(Number(val || 0), true), name]}
               />
               <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} iconType="circle" />
               <Line

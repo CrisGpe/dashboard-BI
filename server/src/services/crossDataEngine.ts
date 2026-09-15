@@ -259,7 +259,9 @@ export class CrossDataEngine {
       totalIngresosRetail,
       ticketPromedioRetail,
       tasaCancelacionServicios,
-      resolveAgentName
+      resolveAgentName,
+      ventasCajaRaw,
+      ticketsRaw
     });
 
     return {
