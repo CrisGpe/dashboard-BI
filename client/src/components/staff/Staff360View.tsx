@@ -326,13 +326,26 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
       sedeMap.set(cat, cur);
     });
 
-    const agentMap = new Map<string, { total: number; count: number; comisiones: number }>();
+    const agentMap = new Map<
+      string,
+      { total: number; count: number; comisiones: number; isRetail: boolean }
+    >();
     agentCashSales.forEach((cs) => {
       const cat = cs.servicioSubCategoria || cs.servicioCategoria || "General";
-      const cur = agentMap.get(cat) || { total: 0, count: 0, comisiones: 0 };
+      const cur = agentMap.get(cat) || { total: 0, count: 0, comisiones: 0, isRetail: false };
       cur.total += cs.montoFinal;
       cur.count++;
       cur.comisiones += cs.comision;
+      if (
+        cs.isRetail ||
+        cs.servicioCategoria === "Retail" ||
+        cat.toLowerCase().startsWith("venta retail") ||
+        cat.toLowerCase().includes("retail") ||
+        cat.toUpperCase() === "PRODUCTO" ||
+        cat.toUpperCase() === "VENTAS"
+      ) {
+        cur.isRetail = true;
+      }
       agentMap.set(cat, cur);
     });
 
@@ -351,7 +364,8 @@ export const Staff360View: React.FC<Staff360ViewProps> = ({
           ticketPromedio: Math.round(avgAgent * 100) / 100,
           ticketSede: Math.round(avgSede * 100) / 100,
           diffPct,
-          margenPct
+          margenPct,
+          isRetail: stats.isRetail
         };
       })
       .sort((a, b) => b.facturacion - a.facturacion);
