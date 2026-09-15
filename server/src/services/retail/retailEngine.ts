@@ -15,7 +15,7 @@ import {
   DAY_SHORT_LABELS
 } from "../parsers/dataParsers.js";
 
-function normalizeBrandName(raw: string): string {
+export function normalizeBrandName(raw: string): string {
   if (!raw) return "Sin Marca";
   const clean = raw.trim();
   const upper = clean.toUpperCase();

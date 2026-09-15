@@ -148,7 +148,9 @@ export class CrossDataEngine {
       ventasCajaRaw,
       orders,
       productRankings,
-      resolveAgentName
+      resolveAgentName,
+      ventasDetalleRaw,
+      productosCatalogoRaw
     );
     const {
       totalFacturacion: totalFacturacionServiciosCaja,

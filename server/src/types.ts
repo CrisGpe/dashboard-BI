@@ -142,6 +142,10 @@ export interface CashServiceSaleRecord {
   boleta: string;
   mes: string;
   anio: string;
+  sku?: string;
+  productoMarca?: string;
+  productoLinea?: string;
+  isRetail?: boolean;
 }
 
 export interface ServiceCategoryMetric {

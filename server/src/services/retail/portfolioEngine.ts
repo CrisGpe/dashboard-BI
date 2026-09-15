@@ -7,6 +7,7 @@ import {
   ProductMarginRanking
 } from "../../types.js";
 import { parseExcelDateToIso, parseSafeNumber, getDayOfWeek } from "../parsers/dataParsers.js";
+import { normalizeBrandName } from "./retailEngine.js";
 
 export function normalizeOatcCategory(catRaw: string, serviceName?: string): string {
   let c = (catRaw || "").trim().toLowerCase();
@@ -95,7 +96,9 @@ export function processCashAndPortfolio(
   ventasCajaRaw: any[][] = [],
   orders: OatcRecord[] = [],
   productRankings: ProductMarginRanking[] = [],
-  resolveAgentName: (raw: string) => string
+  resolveAgentName: (raw: string) => string,
+  ventasDetalleRaw: any[][] = [],
+  productosCatalogoRaw: any[][] = []
 ): {
   cashServiceSales: CashServiceSaleRecord[];
   serviceCategoryRankings: ServiceCategoryMetric[];
@@ -121,6 +124,49 @@ export function processCashAndPortfolio(
     }
   >();
 
+  // Index Product Catalog (BBDD_Productos)
+  const catalogMap = new Map<
+    string,
+    {
+      sku: string;
+      marca: string;
+      linea: string;
+      nombre: string;
+      presentacion: string;
+    }
+  >();
+
+  productosCatalogoRaw.forEach((row) => {
+    const sku = String(row[0] || "").trim();
+    if (!sku || sku === "SKU") return;
+    const rawMarca = String(row[1] || "").trim();
+    const rawLinea = String(row[2] || "").trim();
+    const rawNombre = String(row[3] || "").trim();
+    const rawPresentacion = String(row[4] || "").trim();
+
+    catalogMap.set(sku, {
+      sku,
+      marca: normalizeBrandName(rawMarca),
+      linea: rawLinea || "General",
+      nombre: rawNombre,
+      presentacion: rawPresentacion
+    });
+  });
+
+  // Index Ventas_Detalle by Ticket
+  const detTicketMap = new Map<string, Array<{ sku: string; prod: string }>>();
+  ventasDetalleRaw.forEach((row) => {
+    const ticketId = String(row[1] || "").trim();
+    const sku = String(row[2] || "").trim();
+    const prod = String(row[3] || "").trim();
+    if (ticketId && ticketId !== "Ticket") {
+      if (!detTicketMap.has(ticketId)) {
+        detTicketMap.set(ticketId, []);
+      }
+      detTicketMap.get(ticketId)!.push({ sku, prod });
+    }
+  });
+
   let totalFacturacionServiciosCaja = 0;
   let totalComisionesServiciosCaja = 0;
   let pagoServiciosTarjeta = 0;
@@ -137,9 +183,69 @@ export function processCashAndPortfolio(
     const cliente = String(row[3] || "Cliente Casual").trim();
     const agente = resolveAgentName(String(row[4] || ""));
     const servOrig = String(row[5] || "").trim();
-    const servFin = String(row[6] || servOrig).trim();
-    const subCat = String(row[7] || "General").trim();
-    const cat = String(row[8] || "Estilismo").trim();
+    let servFin = String(row[6] || servOrig).trim();
+    let subCat = String(row[7] || "General").trim();
+    let cat = String(row[8] || "Estilismo").trim();
+
+    const isRetailItem =
+      servOrig.toUpperCase() === "VENTAS" ||
+      servOrig.toUpperCase().includes("VENTA") ||
+      subCat.toUpperCase() === "VENTAS" ||
+      subCat.toUpperCase() === "VENTA PRODUCTO" ||
+      cat.toUpperCase() === "PRODUCTO" ||
+      cat.toUpperCase() === "VENTAS";
+
+    let resolvedSku: string | undefined = undefined;
+    let resolvedMarca: string | undefined = undefined;
+    let resolvedLinea: string | undefined = undefined;
+    let isRetail = false;
+
+    if (isRetailItem) {
+      isRetail = true;
+      // 1. Look up Ticket in Ventas_Detalle (Col B)
+      const detItems = detTicketMap.get(ticketId);
+      if (detItems && detItems.length > 0) {
+        let match = detItems.find(
+          (it) =>
+            servFin.toLowerCase().includes(it.prod.toLowerCase()) ||
+            it.prod.toLowerCase().includes(servFin.toLowerCase())
+        );
+        if (!match && detItems.length === 1) match = detItems[0];
+        resolvedSku = match ? match.sku : detItems[0].sku;
+        const catProd = catalogMap.get(resolvedSku);
+        if (catProd) {
+          resolvedMarca = catProd.marca;
+          resolvedLinea = catProd.linea;
+        }
+      }
+
+      // 2. Fallback: Search in BBDD_Productos by product name (Col G)
+      if (!resolvedMarca) {
+        for (const [sku, p] of catalogMap.entries()) {
+          if (
+            p.nombre &&
+            (servFin.toLowerCase().includes(p.nombre.toLowerCase()) ||
+              p.nombre.toLowerCase().includes(servFin.toLowerCase()))
+          ) {
+            resolvedSku = sku;
+            resolvedMarca = p.marca;
+            resolvedLinea = p.linea;
+            break;
+          }
+        }
+      }
+
+      const finalBrand =
+        resolvedMarca &&
+        resolvedMarca !== "General / Sin Marca" &&
+        resolvedMarca !== "Sin Marca" &&
+        resolvedMarca !== "GENERAL"
+          ? resolvedMarca
+          : "Otras Marcas";
+
+      subCat = `Venta Retail - ${finalBrand}`;
+      cat = "Retail";
+    }
 
     const mEfectivo = parseSafeNumber(row[9]);
     const mTarjeta = parseSafeNumber(row[10]);
@@ -179,7 +285,11 @@ export function processCashAndPortfolio(
       ruc,
       boleta,
       mes,
-      anio
+      anio,
+      sku: resolvedSku,
+      productoMarca: resolvedMarca,
+      productoLinea: resolvedLinea,
+      isRetail
     };
 
     cashServiceSales.push(record);

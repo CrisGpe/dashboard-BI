@@ -145,6 +145,10 @@ export interface CashServiceSaleRecord {
   mes: string;
   anio: string;
   sede?: string;
+  sku?: string;
+  productoMarca?: string;
+  productoLinea?: string;
+  isRetail?: boolean;
 }
 
 export interface ServiceCategoryMetric {
